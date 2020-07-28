@@ -16,15 +16,17 @@ object Flink03_WordCount_Unbounder {
 
     //1.获取执行环境
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
+    //    env.disableOperatorChaining()
 
     //2.读取数据创建流
     val lineDS: DataStream[String] = env.socketTextStream("hadoop102", 9999)
 
     //3.扁平化
-    val wordDS: DataStream[String] = lineDS.flatMap(_.split(" "))
+    val wordDS: DataStream[String] = lineDS.flatMap(_.split(" ")).startNewChain()
 
     //4.将每一个单词转换为元组
-    val wordToOneDS: DataStream[(String, Int)] = wordDS.map((_, 1))
+    val wordToOneDS: DataStream[(String, Int)] = wordDS.map((_, 1)).disableChaining()
 
     //5.分组
     val keyedDS: KeyedStream[(String, Int), Tuple] = wordToOneDS.keyBy(0)
