@@ -22,11 +22,12 @@ object Trans01_Map {
     //      SensorReading(arr(0), arr(1).toLong, arr(2).toDouble)
     //    })
 
-//    val sensorDStream: DataStream[SensorReading] = lineDStream.map(new MyMapFunc)
+    //    val sensorDStream: DataStream[SensorReading] = lineDStream.map(new MyMapFunc)
     val sensorDStream: DataStream[SensorReading] = lineDStream.map(new MyRichMapFunc)
 
     //4.打印
     sensorDStream.print()
+
 
     //5.开启任务
     env.execute("Tans Map Test")
