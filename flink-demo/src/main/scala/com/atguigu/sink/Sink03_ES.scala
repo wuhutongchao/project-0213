@@ -5,6 +5,7 @@ import java.util
 import com.atguigu.bean.SensorReading
 import com.atguigu.source.MySource
 import org.apache.flink.api.common.functions.RuntimeContext
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.elasticsearch.{ElasticsearchSinkFunction, RequestIndexer}
 import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
