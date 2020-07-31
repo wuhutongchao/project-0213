@@ -16,6 +16,7 @@ object WindowType {
 
     //1.创建执行环境
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setParallelism(1)
 
     //2.读取数据源
     val lineDStream: DataStream[String] = env.socketTextStream("hadoop102", 9999)
@@ -28,13 +29,13 @@ object WindowType {
     val keyedDStream: KeyedStream[SensorReading, Tuple] = sensorDStream.keyBy(0)
 
     //4.开窗简写方式
-    //    keyedDStream.timeWindow(Time.seconds(10))
+    keyedDStream.timeWindow(Time.seconds(10))
     //    val windowDStream: WindowedStream[SensorReading, Tuple, TimeWindow] = keyedDStream.timeWindow(Time.seconds(15), Time.seconds(5))
-    val windowDStream: WindowedStream[SensorReading, Tuple, GlobalWindow] = keyedDStream.countWindow(5L)
+    //    val windowDStream: WindowedStream[SensorReading, Tuple, GlobalWindow] = keyedDStream.countWindow(5L)
     //    keyedDStream.countWindow(10L, 2L)
     //
     //    //底层API
-    //    keyedDStream.window(ProcessingTimeSessionWindows.withGap(Time.seconds(10)))
+    val windowDStream: WindowedStream[SensorReading, Tuple, TimeWindow] = keyedDStream.window(ProcessingTimeSessionWindows.withGap(Time.seconds(6)))
     //    keyedDStream.window(TumblingProcessingTimeWindows.of(Time.seconds(10)))
     //    keyedDStream.window(SlidingProcessingTimeWindows.of(Time.seconds(10), Time.seconds(5)))
 
@@ -54,9 +55,9 @@ object WindowType {
 
 }
 
-class MyWindowFunction extends WindowFunction[SensorReading, Int, Tuple, GlobalWindow] {
+class MyWindowFunction extends WindowFunction[SensorReading, Int, Tuple, TimeWindow] {
 
-  override def apply(key: Tuple, window: GlobalWindow, input: Iterable[SensorReading], out: Collector[Int]): Unit = {
+  override def apply(key: Tuple, window: TimeWindow, input: Iterable[SensorReading], out: Collector[Int]): Unit = {
     out.collect(input.size)
   }
 }

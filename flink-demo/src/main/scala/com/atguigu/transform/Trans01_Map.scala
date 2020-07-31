@@ -25,6 +25,8 @@ object Trans01_Map {
     //    val sensorDStream: DataStream[SensorReading] = lineDStream.map(new MyMapFunc)
     val sensorDStream: DataStream[SensorReading] = lineDStream.map(new MyRichMapFunc)
 
+    sensorDStream.keyBy(0)
+
     //4.打印
     sensorDStream.print()
 
