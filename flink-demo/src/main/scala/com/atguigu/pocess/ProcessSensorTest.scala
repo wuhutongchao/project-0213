@@ -3,7 +3,6 @@ package com.atguigu.pocess
 import com.atguigu.bean.SensorReading
 import org.apache.flink.api.common.state.{ValueState, ValueStateDescriptor}
 import org.apache.flink.api.java.tuple.Tuple
-import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.util.Collector
@@ -42,6 +41,7 @@ class MyKeyedProcessFunction extends KeyedProcessFunction[Tuple, SensorReading, 
 
   //定义上一条数据的温度状态
   lazy val lastTemp: ValueState[Double] = getRuntimeContext.getState(new ValueStateDescriptor[Double]("last-temp", classOf[Double]))
+
   //定义闹钟触发时间的状态
   lazy val ts: ValueState[Long] = getRuntimeContext.getState(new ValueStateDescriptor[Long]("ts", classOf[Long]))
 
@@ -65,7 +65,9 @@ class MyKeyedProcessFunction extends KeyedProcessFunction[Tuple, SensorReading, 
       //定义10秒后的闹钟
       ctx.timerService().registerProcessingTimeTimer(curTs + 10 * 1000L)
 
-    } else {
+    } else if (curTemp < lastT) {
+
+      //删除闹钟
       ctx.timerService().deleteProcessingTimeTimer(ts.value())
 
       //清空状态
@@ -73,7 +75,12 @@ class MyKeyedProcessFunction extends KeyedProcessFunction[Tuple, SensorReading, 
     }
   }
 
+  //闹钟响了,触发的操作
   override def onTimer(timestamp: Long, ctx: KeyedProcessFunction[Tuple, SensorReading, String]#OnTimerContext, out: Collector[String]): Unit = {
+
     out.collect("连续10秒温度没有下降 ! ")
+
+    //清空状态
+    ts.clear()
   }
 }
